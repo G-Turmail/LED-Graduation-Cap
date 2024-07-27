@@ -1,26 +1,21 @@
+/// @file    Blink.ino
+/// @brief   Blink the first LED of an LED strip
+/// @example Blink.ino
+
 #include <FastLED.h>
 
-// Define LED matrix parameters
+// How many leds in your strip?
 const int NUM_STRIPS = 12;
 const int NUM_LEDS_PER_STRIP = 13;
 const int NUM_LEDS = NUM_STRIPS * NUM_LEDS_PER_STRIP;
+
 #define DATA_PIN 16
 
 // Define the array of leds
 CRGB leds[NUM_LEDS];
-byte halfBright = 50;
+byte halfBright = 80;
 byte fullBright = 255;
-
-// Function to set colors of the entire LED matrix
-void setMatrixColors(CRGB colors[NUM_STRIPS][NUM_LEDS_PER_STRIP]) {
-  for (int strip = 0; strip < NUM_STRIPS; strip++) {
-    for (int led = 0; led < NUM_LEDS_PER_STRIP; led++) {
-      leds[strip * NUM_LEDS_PER_STRIP + led] = colors[strip][led];
-    }
-  }
-  FastLED.setBrightness(halfBright);
-  FastLED.show();
-}
+int switchTime = 15;
 
 // Function to convert text format to 2D array of CRGB colors
 void textToColorArray(char text[NUM_STRIPS][NUM_LEDS_PER_STRIP], CRGB colors[NUM_STRIPS][NUM_LEDS_PER_STRIP]) {
@@ -38,6 +33,8 @@ void textToColorArray(char text[NUM_STRIPS][NUM_LEDS_PER_STRIP], CRGB colors[NUM
       else if (pixelColor == 'G')
         color = CRGB::Green;
       else if (pixelColor == 'B')
+        color = CRGB::Black;
+      else if (pixelColor == 'U')
         color = CRGB::Blue;
       else if (pixelColor == 'P')
         color = CRGB::Purple;
@@ -51,32 +48,147 @@ void textToColorArray(char text[NUM_STRIPS][NUM_LEDS_PER_STRIP], CRGB colors[NUM
   }
 }
 
+// Function to set and display all LEDs based on the 2D array of colors, displaying the image upside down
+void displayLEDs(char text[NUM_STRIPS][NUM_LEDS_PER_STRIP]) {
+  CRGB colors[NUM_STRIPS][NUM_LEDS_PER_STRIP];
+  textToColorArray(text, colors);
+  int ledIndex = 0;
+  for (int row = NUM_STRIPS - 1; row >= 0; row--) { // Iterate rows in reverse order
+    if (row % 2 == 0) {
+      // Forward direction for even-indexed rows
+      for (int col = 0; col < NUM_LEDS_PER_STRIP; col++) {
+        leds[ledIndex++] = colors[row][col];
+      }
+    } else {
+      // Reverse direction for odd-indexed rows
+      for (int col = NUM_LEDS_PER_STRIP - 1; col >= 0; col--) {
+        leds[ledIndex++] = colors[row][col];
+      }
+    }
+  }
+  // Show all LEDs
+  FastLED.setBrightness(halfBright);
+  FastLED.show();
+}
+
+char UF[][NUM_LEDS_PER_STRIP] = {
+                  {'U', 'B', 'B', 'B', 'B', 'U', 'B', 'R', 'R', 'R', 'R', 'R', 'R'},
+                  {'U', 'B', 'B', 'B', 'B', 'U', 'B', 'R', 'B', 'B', 'B', 'B', 'B'},
+                  {'U', 'B', 'B', 'B', 'B', 'U', 'B', 'R', 'B', 'B', 'B', 'B', 'B'},
+                  {'U', 'B', 'B', 'B', 'B', 'U', 'B', 'R', 'B', 'B', 'B', 'B', 'B'},
+                  {'U', 'B', 'B', 'B', 'B', 'U', 'B', 'R', 'B', 'B', 'B', 'B', 'B'},
+                  {'U', 'B', 'B', 'B', 'B', 'U', 'B', 'R', 'R', 'R', 'R', 'R', 'R'},
+                  {'U', 'B', 'B', 'B', 'B', 'U', 'B', 'R', 'B', 'B', 'B', 'B', 'B'},
+                  {'U', 'B', 'B', 'B', 'B', 'U', 'B', 'R', 'B', 'B', 'B', 'B', 'B'},
+                  {'U', 'B', 'B', 'B', 'B', 'U', 'B', 'R', 'B', 'B', 'B', 'B', 'B'},
+                  {'U', 'B', 'B', 'B', 'B', 'U', 'B', 'R', 'B', 'B', 'B', 'B', 'B'},
+                  {'U', 'B', 'B', 'B', 'B', 'U', 'B', 'R', 'B', 'B', 'B', 'B', 'B'},
+                  {'U', 'U', 'U', 'U', 'U', 'U', 'B', 'R', 'B', 'B', 'B', 'B', 'B'}
+                };
+
+char numbah1[][NUM_LEDS_PER_STRIP] = {
+                  {'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'U', 'B', 'B'},
+                  {'B', 'R', 'B', 'B', 'R', 'B', 'B', 'B', 'B', 'U', 'U', 'B', 'B'},
+                  {'B', 'R', 'B', 'B', 'R', 'B', 'B', 'B', 'U', 'B', 'U', 'B', 'B'},
+                  {'R', 'R', 'R', 'R', 'R', 'R', 'B', 'B', 'B', 'B', 'U', 'B', 'B'},
+                  {'B', 'R', 'B', 'B', 'R', 'B', 'B', 'B', 'B', 'B', 'U', 'B', 'B'},
+                  {'B', 'R', 'B', 'B', 'R', 'B', 'B', 'B', 'B', 'B', 'U', 'B', 'B'},
+                  {'B', 'R', 'B', 'B', 'R', 'B', 'B', 'B', 'B', 'B', 'U', 'B', 'B'},
+                  {'B', 'R', 'B', 'B', 'R', 'B', 'B', 'B', 'B', 'B', 'U', 'B', 'B'},
+                  {'R', 'R', 'R', 'R', 'R', 'R', 'B', 'B', 'B', 'B', 'U', 'B', 'B'},
+                  {'B', 'R', 'B', 'B', 'R', 'B', 'B', 'B', 'B', 'B', 'U', 'B', 'B'},
+                  {'B', 'R', 'B', 'B', 'R', 'B', 'B', 'B', 'B', 'B', 'U', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'U', 'U', 'U', 'U', 'U'}
+                };
+
+char Blank[][NUM_LEDS_PER_STRIP] = {
+                  {'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'}
+                };
+
+  char TEST[][NUM_LEDS_PER_STRIP] = {
+                  {'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'},
+                  {'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'},
+                  {'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'},
+                  {'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'},
+                  {'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'},
+                  {'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'},
+                  {'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'},
+                  {'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'},
+                  {'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'},
+                  {'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'},
+                  {'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'},
+                  {'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'}
+                };
+          
+  char Albert[][NUM_LEDS_PER_STRIP] = {
+                  {'B', 'B', 'B', 'B', 'B', 'R', 'R', 'B', 'B', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'B', 'R', 'R', 'R', 'R', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'G', 'G', 'G', 'G', 'B', 'B', 'G', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'G', 'W', 'U', 'G', 'G', 'G', 'B', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'G', 'G', 'G', 'G', 'G', 'W', 'B', 'B', 'B'},
+                  {'B', 'B', 'B', 'R', 'R', 'G', 'G', 'R', 'R', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'B', 'B', 'B'},
+                  {'B', 'B', 'G', 'R', 'B', 'R', 'R', 'G', 'R', 'G', 'B', 'B', 'B'},
+                  {'B', 'G', 'B', 'B', 'B', 'R', 'R', 'G', 'B', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'G', 'G', 'G', 'G', 'G', 'G', 'B', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'G', 'G', 'B', 'G', 'G', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'G', 'G', 'B', 'G', 'G', 'B', 'B', 'B', 'B'}
+                };
+
+  char Gator[][NUM_LEDS_PER_STRIP] = {
+                  {'B', 'B', 'B', 'G', 'B', 'B', 'G', 'B', 'B', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'G', 'G', 'G', 'G', 'G', 'G', 'B', 'B', 'B', 'B', 'B'},
+                  {'B', 'G', 'G', 'U', 'W', 'G', 'G', 'G', 'G', 'G', 'B', 'B', 'G'},
+                  {'B', 'G', 'G', 'W', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'},
+                  {'G', 'G', 'G', 'G', 'G', 'W', 'G', 'W', 'G', 'W', 'G', 'W', 'B'},
+                  {'B', 'G', 'G', 'G', 'G', 'G', 'W', 'B', 'W', 'B', 'W', 'B', 'B'},
+                  {'G', 'G', 'G', 'G', 'G', 'R', 'R', 'W', 'R', 'W', 'B', 'W', 'B'},
+                  {'B', 'G', 'G', 'G', 'G', 'R', 'W', 'R', 'W', 'R', 'W', 'R', 'W'},
+                  {'B', 'B', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'},
+                  {'B', 'B', 'B', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'B', 'G', 'G', 'G', 'B', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'}
+                };  
+
+char Sean[][NUM_LEDS_PER_STRIP] = {
+                  {'B', 'B', 'B', 'B', 'R', 'R', 'B', 'R', 'R', 'B', 'B', 'B', 'B'},
+                  {'B', 'B', 'R', 'R', 'R', 'R', 'B', 'R', 'R', 'R', 'R', 'B', 'B'},
+                  {'B', 'R', 'R', 'R', 'R', 'R', 'B', 'R', 'R', 'R', 'R', 'R', 'B'},
+                  {'B', 'R', 'R', 'R', 'R', 'R', 'B', 'R', 'R', 'R', 'G', 'R', 'B'},
+                  {'R', 'R', 'R', 'G', 'R', 'R', 'R', 'R', 'R', 'G', 'Y', 'R', 'R'},
+                  {'R', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'Y', 'R', 'R', 'R'},
+                  {'U', 'U', 'U', 'Y', 'G', 'Y', 'Y', 'G', 'Y', 'U', 'U', 'U', 'U'},
+                  {'U', 'U', 'U', 'U', 'G', 'U', 'U', 'G', 'U', 'U', 'U', 'U', 'U'},
+                  {'B', 'U', 'U', 'U', 'U', 'U', 'U', 'B', 'B', 'B', 'B', 'B', 'B'},
+                  {'B', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'B'},
+                  {'B', 'B', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'B'},
+                  {'B', 'B', 'B', 'B', 'B', 'U', 'U', 'U', 'B', 'B', 'B', 'B', 'B'}
+                };                      
+
 void setup() { 
     FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);  // GRB ordering is assumed
 }
 
-void loop() {
-  // Example usage
-  String textImage1 = "Red Red Red Red Red Red Red Red Red Red Red Red Red "  // Row 1
-                    "Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange " // Row 2
-                    "Yellow Yellow Yellow Yellow Yellow Yellow Yellow Yellow Yellow Yellow Yellow Yellow Yellow " // Row 3
-                    "Green Green Green Green Green Green Green Green Green Green Green Green Green " // Row 4
-                    "Blue Blue Blue Blue Blue Blue Blue Blue Blue Blue Blue Blue Blue " // Row 5
-                    "Purple Purple Purple Purple Purple Purple Purple Purple Purple Purple Purple Purple Purple " // Row 6
-                    "Red Red Red Red Red Red Red Red Red Red Red Red Red " // Row 7
-                    "Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange " // Row 8
-                    "Yellow Yellow Yellow Yellow Yellow Yellow Yellow Yellow Yellow Yellow Yellow Yellow Yellow " // Row 9
-                    "Green Green Green Green Green Green Green Green Green Green Green Green Green " // Row 10
-                    "Blue Blue Blue Blue Blue Blue Blue Blue Blue Blue Blue Blue Blue " // Row 11
-                    "Purple Purple Purple Purple Purple Purple Purple Purple Purple Purple Purple Purple Purple"; // Row 12
-  
-  CRGB colors1[NUM_STRIPS][NUM_LEDS_PER_STRIP]; // Declare a 2D array of RGB colors for image 1
-  
-  // Convert text format to color arrays
-  textToColorArray(textImage1, colors1);
-  
-  // Set the LED matrix to the first image
-  setMatrixColors(colors1);
-
-  delay(50000);
+void loop() { 
+  displayLEDs(Gator);
+  delay(switchTime * 1000);
+  displayLEDs(numbah1);
+  delay(switchTime * 1000);
+  displayLEDs(Albert);
+  delay(switchTime * 1000);
+  displayLEDs(Sean);
+  delay(switchTime * 1000);
+  displayLEDs(UF);
+  delay(switchTime * 1000);
 }
